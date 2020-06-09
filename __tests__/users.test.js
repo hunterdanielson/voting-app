@@ -22,7 +22,6 @@ describe('user routes', () => {
     return mongod.stop();
   });
 
-
   it('gets specific user description by id via GET', () => {
     return User.create({
       name: 'hunter',
@@ -45,47 +44,55 @@ describe('user routes', () => {
       });
   });
 
-  // it('updates a org by id via PATCH', () => {
-  //   return User.create({
-  //     title: 'random company',
-  //     description: 'rand desc',
-  //     imageUrl: 'old.png',
-  //   })
-  //     .then(organization => {
-  //       return request(app)
-  //         .patch(`/api/v1/organizations/${organization._id}`)
-  //         .send({ imageUrl: 'otherpic.png' });
-  //     })
-  //     .then(res => {
-  //       expect(res.body).toEqual({
-  //         _id: expect.anything(),
-  //         title: 'random company',
-  //         description: 'rand desc',
-  //         imageUrl: 'otherpic.png',
-  //         __v: 0
-  //       });
-  //     });
-  // });
+  it('updates a user by id via PATCH', () => {
+    return User.create({
+      name: 'hunter',
+      phone: '1234567890',
+      email: 'fakeemail@gmail.com',
+      communicationMedium: 'phone',
+      imageUrl: 'pic.png'
+    })
+      .then(user => {
+        return request(app)
+          .patch(`/api/v1/users/${user._id}`)
+          .send({ email: 'newfakeemail@gmail.com' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'hunter',
+          phone: '1234567890',
+          email: 'newfakeemail@gmail.com',
+          communicationMedium: 'phone',
+          imageUrl: 'pic.png',
+          __v: 0
+        });
+      });
+  });
 
-  // it('can del a org by id via DELETE', () => {
-  //   return User.create({
-  //     name: 'hunter',
-  //     phone: '1234567890'
-  //   })
-  //     .then(organization => {
-  //       return request(app)
-  //         .delete(`/api/v1/organizations/${organization._id}`)
-  //         .send({ imageUrl: 'otherpic.png' });
-  //     })
-  //     .then(res => {
-  //       expect(res.body).toEqual({
-  //         _id: expect.anything(),
-  //         title: 'random company',
-  //         description: 'rand desc',
-  //         imageUrl: 'random.png',
-  //         __v: 0
-  //       });
-  //     });
-  // });
-
+  it('can del a org by id via DELETE', () => {
+    return User.create({
+      name: 'hunter',
+      phone: '1234567890',
+      email: 'fakeemail@gmail.com',
+      communicationMedium: 'phone',
+      imageUrl: 'pic.png'
+    })
+      .then(user => {
+        return request(app)
+          .delete(`/api/v1/users/${user._id}`)
+          .send({ imageUrl: 'otherpic.png' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'hunter',
+          phone: '1234567890',
+          email: 'fakeemail@gmail.com',
+          communicationMedium: 'phone',
+          imageUrl: 'pic.png',
+          __v: 0
+        });
+      });
+  });
 });
