@@ -57,7 +57,7 @@ describe('organization routes', () => {
       });
   });
 
-  it('gets all org data by GET', () => {
+  it('gets all orgs title, imageUrl by GET', () => {
     return Organization.create({
       title: 'random company',
       description: 'rand desc',
@@ -67,8 +67,24 @@ describe('organization routes', () => {
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
-          title: 'random company'
+          title: 'random company',
+          imageUrl: 'random.png'
         }]);
+      });
+  });
+
+  it('gets specific org description by GET id', () => {
+    return Organization.create({
+      title: 'random company',
+      description: 'rand desc',
+      imageUrl: 'random.png',
+    })
+      .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          description: 'rand desc'
+        });
       });
   });
 
