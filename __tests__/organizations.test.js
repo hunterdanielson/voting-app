@@ -110,4 +110,26 @@ describe('organization routes', () => {
       });
   });
 
+  it('can del a org by id via DELETE', () => {
+    return Organization.create({
+      title: 'random company',
+      description: 'rand desc',
+      imageUrl: 'random.png',
+    })
+      .then(organization => {
+        return request(app)
+          .delete(`/api/v1/organizations/${organization._id}`)
+          .send({ imageUrl: 'otherpic.png' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'random company',
+          description: 'rand desc',
+          imageUrl: 'random.png',
+          __v: 0
+        });
+      });
+  });
+
 });
