@@ -88,4 +88,26 @@ describe('organization routes', () => {
       });
   });
 
+  it('updates a org by id via PATCH', () => {
+    return Organization.create({
+      title: 'random company',
+      description: 'rand desc',
+      imageUrl: 'old.png',
+    })
+      .then(organization => {
+        return request(app)
+          .patch(`/api/v1/organizations/${organization._id}`)
+          .send({ imageUrl: 'otherpic.png' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'random company',
+          description: 'rand desc',
+          imageUrl: 'otherpic.png',
+          __v: 0
+        });
+      });
+  });
+
 });
