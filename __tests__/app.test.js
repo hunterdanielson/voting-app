@@ -20,4 +20,9 @@ describe('voting-app routes', () => {
     await mongoose.connection.close();
     return mongod.stop();
   });
+
+  it('returns true', () => {
+    const test = true;
+    expect(test).toEqual(true);
+  });
 });
