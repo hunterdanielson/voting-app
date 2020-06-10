@@ -61,11 +61,15 @@ describe('poll routes', () => {
       description: 'You drink water',
       options: ['Yes', 'No']
     })
-      .then(() => request(app).get('/api/v1/polls'))
+      .then(() => request(app).get(`/api/v1/polls?organization=${organization.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
-          title: 'water poll'
+          title: 'water poll',
+          organization: {
+            _id: organization.id,
+            title: 'water company'
+          }
         }]);
       });
   });
