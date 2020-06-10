@@ -35,8 +35,7 @@ describe('organization routes', () => {
           _id: expect.anything(),
           title: 'random company',
           description: 'rand desc',
-          imageUrl: 'random.png',
-          __v: 0
+          imageUrl: 'random.png'
         });
       });
   });
@@ -104,8 +103,7 @@ describe('organization routes', () => {
           _id: expect.anything(),
           title: 'random company',
           description: 'rand desc',
-          imageUrl: 'otherpic.png',
-          __v: 0
+          imageUrl: 'otherpic.png'
         });
       });
   });
@@ -126,8 +124,7 @@ describe('organization routes', () => {
           _id: expect.anything(),
           title: 'random company',
           description: 'rand desc',
-          imageUrl: 'random.png',
-          __v: 0
+          imageUrl: 'random.png'
         });
       });
   });
