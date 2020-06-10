@@ -92,4 +92,45 @@ describe('poll routes', () => {
         });
       });
   });
+
+  it('updates a specific poll by id via PATCH', () => {
+    return Poll.create({
+      organization: organization._id,
+      title: 'water poll',
+      description: 'You drink water',
+      options: ['Yes', 'No']
+    })
+      .then(poll => request(app).patch(`/api/v1/polls/${poll._id}`)
+        .send({ title: 'drink water poll' }))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          organization: organization.id,
+          title: 'drink water poll',
+          description: 'You drink water',
+          options: ['Yes', 'No'],
+          __v: 0 
+        });
+      });
+  });
+
+  it('deletes a specific poll by id via DELETE', () => {
+    return Poll.create({
+      organization: organization._id,
+      title: 'water poll',
+      description: 'You drink water',
+      options: ['Yes', 'No']
+    })
+      .then(poll => request(app).delete(`/api/v1/polls/${poll._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          organization: organization.id,
+          title: 'water poll',
+          description: 'You drink water',
+          options: ['Yes', 'No'],
+          __v: 0 
+        });
+      });
+  });
 });
