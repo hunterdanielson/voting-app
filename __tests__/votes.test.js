@@ -16,7 +16,6 @@ describe('poll routes', () => {
     return connect(uri);
   });
 
-
   beforeEach(async() => {
     return mongoose.connection.dropDatabase();
   });

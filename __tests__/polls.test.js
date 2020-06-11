@@ -54,7 +54,7 @@ describe('poll routes', () => {
       });
   });
 
-  it('gets all polls via GET', () => {
+  it('gets all org polls via GET', () => {
     return Poll.create({
       organization: organization._id,
       title: 'water poll',
