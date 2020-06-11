@@ -73,4 +73,101 @@ describe('poll routes', () => {
         });
       });
   });
+
+  it('gets all votes by poll via GET', () => {
+    return Vote.create({
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    })
+      .then(() => request(app).get(`/api/v1/votes?poll=${poll.id}`))
+      .then(res => {
+        expect(res.body).toEqual([{
+          _id: expect.anything(),
+          __v: 0,
+          user: {
+            _id: user.id
+          },
+          option: 'Yes',
+          poll: poll.id
+        }]);
+      });
+  });
+
+  it('gets all votes by user via GET', () => {
+    return Vote.create({
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    })
+      .then(() => request(app).get(`/api/v1/votes?user=${user.id}`))
+      .then(res => {
+        expect(res.body).toEqual([{
+          _id: expect.anything(),
+          __v: 0,
+          user: {
+            _id: user.id
+          },
+          option: 'Yes',
+          poll: poll.id
+        }]);
+      });
+  });
+
+  it('gets a vote by vote id via GET', () => {
+    return Vote.create({
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    })
+      .then(vote => request(app).get(`/api/v1/votes/${vote._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          __v: 0,
+          user: {
+            _id: user.id
+          },
+          option: 'Yes',
+          poll: poll.id
+        });
+      });
+  });
+
+  it('updates a vote via PATCH', () => {
+    return Vote.create({
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    })
+      .then(vote => request(app).patch(`/api/v1/votes/${vote._id}`)
+        .send({ option: 'No' }))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          __v: 0,
+          user: user.id,
+          option: 'No',
+          poll: poll.id
+        });
+      });
+  });
+
+  it('deletes a vote via DELETE', () => {
+    return Vote.create({
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    })
+      .then(vote => request(app).delete(`/api/v1/votes/${vote._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          __v: 0,
+          user: user.id,
+          option: 'Yes',
+          poll: poll.id
+        });
+      });
+  });
 });
