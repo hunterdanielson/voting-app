@@ -160,6 +160,10 @@ describe('organization routes', () => {
           description: 'rand desc',
           imageUrl: 'random.png'
         });
+        return Poll.find({ organization: org._id });
+      })
+      .then(polls => {
+        expect(polls).toEqual([]);
       });
   });
 
