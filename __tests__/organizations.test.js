@@ -166,5 +166,4 @@ describe('organization routes', () => {
         expect(polls).toEqual([]);
       });
   });
-
 });

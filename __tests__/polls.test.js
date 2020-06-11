@@ -7,6 +7,8 @@ const request = require('supertest');
 const app = require('../lib/app');
 const Poll = require('../lib/models/Poll');
 const Organization = require('../lib/models/Organization');
+const Vote = require('../lib/models/Vote');
+const User = require('../lib/models/User');
 
 describe('poll routes', () => {
   beforeAll(async() => {
@@ -118,14 +120,32 @@ describe('poll routes', () => {
       });
   });
 
-  it('deletes a specific poll by id via DELETE', () => {
-    return Poll.create({
+  it('deletes a specific poll by id and all associated votes via DELETE', async() => {
+    const poll = await Poll.create({
       organization: organization._id,
       title: 'water poll',
       description: 'You drink water',
       options: ['Yes', 'No']
-    })
-      .then(poll => request(app).delete(`/api/v1/polls/${poll._id}`))
+    });
+    const user = await User.create({
+      name: 'hunter',
+      phone: '1234567890',
+      email: 'fakeemail@gmail.com',
+      communicationMedium: 'phone',
+      imageUrl: 'pic.png'
+    });
+    await Vote.create([{
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    }, {
+      poll: poll._id,
+      user: user._id,
+      option: 'No'
+    }]);
+
+    return request(app)
+      .delete(`/api/v1/polls/${poll._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -135,6 +155,11 @@ describe('poll routes', () => {
           options: ['Yes', 'No'],
           __v: 0 
         });
+
+        return Vote.find({ poll: poll._id });
+      })
+      .then(vote => {
+        expect(vote).toEqual([]);
       });
   });
 });
