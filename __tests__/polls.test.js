@@ -35,7 +35,8 @@ describe('poll routes', () => {
     return mongod.stop();
   });
   
-  it('creates a poll via POST', () => {
+  it.only('creates a poll via POST', () => {
+
     return request(app)
       .post('/api/v1/polls')
       .send({
