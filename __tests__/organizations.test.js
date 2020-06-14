@@ -9,6 +9,7 @@ const Organization = require('../lib/models/Organization');
 const Poll = require('../lib/models/Poll');
 const Vote = require('../lib/models/Vote');
 const User = require('../lib/models/User');
+const Membership = require('../lib/models/Membership');
 
 describe('organization routes', () => {
   beforeAll(async() => {
@@ -46,7 +47,7 @@ describe('organization routes', () => {
   // this test logs the error, which is huge
   // skipping it for now lets me look at other tests easier
   // but it still works
-  it.skip('can fails to create with bad data by POST', () => {
+  it('can fails to create with bad data by POST', () => {
     return request(app)
       .post('/api/v1/organizations')
       .send({
@@ -78,17 +79,38 @@ describe('organization routes', () => {
       });
   });
 
-  it('gets specific org description by GET id', () => {
-    return Organization.create({
+  it('gets specific org and all members by GET id', async() => {
+    const org = await Organization.create({
       title: 'random company',
       description: 'rand desc',
       imageUrl: 'random.png',
-    })
-      .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
+    });
+    const user = await User.create({
+      name: 'hunter',
+      phone: '1234567890',
+      email: 'fakeemail@gmail.com',
+      communicationMedium: 'phone',
+      imageUrl: 'pic.png'
+    });
+    await Membership.create(
+      {
+        organization: org._id,
+        user: user._id
+      });
+    return request(app)
+      .get(`/api/v1/organizations/${org._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
-          description: 'rand desc'
+          description: 'rand desc',
+          imageUrl: 'random.png',
+          title: 'random company',
+          memberships: [{
+            __v: 0,
+            _id: expect.anything(),
+            organization: org.id,
+            user: user.id
+          }]
         });
       });
   });
