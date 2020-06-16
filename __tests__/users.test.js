@@ -17,6 +17,7 @@ describe('user routes', () => {
   beforeEach(() => {
     return mongoose.connection.dropDatabase();
   });
+  
   let user;
   beforeEach(async() => {
     user = await User.create({
@@ -78,7 +79,7 @@ describe('user routes', () => {
 
   it('can verify a user via GET', () => {
     const agent = request.agent(app);
-    
+
     return agent
       .post('/api/v1/users/login')
       .send({
@@ -102,7 +103,6 @@ describe('user routes', () => {
   });
 
   it('gets specific user and all orgs they are part of by id via GET', () => {
-   
     return request(app).get(`/api/v1/users/${user._id}`)
       .then(res => {
         expect(res.body).toEqual({
@@ -134,12 +134,9 @@ describe('user routes', () => {
   });
 
   it('can del a org by id via DELETE', () => {
-
-     
     return request(app)
       .delete(`/api/v1/users/${user._id}`)
       .send({ imageUrl: 'otherpic.png' })
-     
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),

@@ -47,7 +47,7 @@ describe('organization routes', () => {
   // this test logs the error, which is huge
   // skipping it for now lets me look at other tests easier
   // but it still works
-  it.only('can fails to create with bad data by POST', () => {
+  it('can fails to create with bad data by POST', () => {
     return request(app)
       .post('/api/v1/organizations')
       .send({

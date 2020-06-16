@@ -44,6 +44,7 @@ describe('poll routes', () => {
     user = await User.create({
       name: 'hunter',
       phone: '1234567890',
+      password: 'password123',
       email: 'newfakeemail@gmail.com',
       communicationMedium: 'phone',
       imageUrl: 'pic.png',
@@ -55,7 +56,7 @@ describe('poll routes', () => {
     return mongod.stop();
   });
   
-  it.only('creates a vote via POST', () => {
+  it('creates a vote via POST', () => {
     return request(app)
       .post('/api/v1/votes')
       .send({

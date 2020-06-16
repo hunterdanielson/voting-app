@@ -38,6 +38,7 @@ describe('membership routes', () => {
       name: 'hunter',
       phone: '1234567890',
       email: 'newfakeemail@gmail.com',
+      password: 'password123',
       communicationMedium: 'phone',
       imageUrl: 'pic.png',
     });
@@ -48,7 +49,7 @@ describe('membership routes', () => {
     return mongod.stop();
   });
   
-  it.only('creates a membership via POST', () => {
+  it('creates a membership via POST', () => {
     return request(app)
       .post('/api/v1/memberships')
       .send({
