@@ -88,6 +88,7 @@ describe('organization routes', () => {
     const user = await User.create({
       name: 'hunter',
       phone: '1234567890',
+      password: 'password123',
       email: 'fakeemail@gmail.com',
       communicationMedium: 'phone',
       imageUrl: 'pic.png'
@@ -159,6 +160,7 @@ describe('organization routes', () => {
     const user = await User.create({
       name: 'hunter',
       phone: '1234567890',
+      password: 'password123',
       email: 'fakeemail@gmail.com',
       communicationMedium: 'phone',
       imageUrl: 'pic.png'
