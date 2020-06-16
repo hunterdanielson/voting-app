@@ -9,6 +9,7 @@ const Poll = require('../lib/models/Poll');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
 const Vote = require('../lib/models/Vote');
+require('dotenv').config();
 
 describe('poll routes', () => {
   beforeAll(async() => {
@@ -51,13 +52,23 @@ describe('poll routes', () => {
     });
   });
 
+  const agent = request.agent(app);
+  beforeEach(() => {
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'newfakeemail@gmail.com',
+        password: 'password123'
+      });
+  });
+
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
   });
   
   it('creates a vote via POST', () => {
-    return request(app)
+    return agent
       .post('/api/v1/votes')
       .send({
         poll: poll._id,
@@ -82,7 +93,7 @@ describe('poll routes', () => {
       option: 'No'
     });
 
-    return request(app)
+    return agent
       .post('/api/v1/votes')
       .send({
         poll: poll._id,
@@ -106,7 +117,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(() => request(app).get(`/api/v1/votes?poll=${poll.id}`))
+      .then(() => agent.get(`/api/v1/votes?poll=${poll.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -126,7 +137,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(() => request(app).get(`/api/v1/votes?user=${user.id}`))
+      .then(() => agent.get(`/api/v1/votes?user=${user.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -146,7 +157,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(vote => request(app).get(`/api/v1/votes/${vote._id}`))
+      .then(vote => agent.get(`/api/v1/votes/${vote._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -166,7 +177,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(vote => request(app).patch(`/api/v1/votes/${vote._id}`)
+      .then(vote => agent.patch(`/api/v1/votes/${vote._id}`)
         .send({ option: 'No' }))
       .then(res => {
         expect(res.body).toEqual({
@@ -185,7 +196,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(vote => request(app).delete(`/api/v1/votes/${vote._id}`))
+      .then(vote => agent.delete(`/api/v1/votes/${vote._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),

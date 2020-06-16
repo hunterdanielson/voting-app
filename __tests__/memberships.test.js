@@ -10,7 +10,7 @@ const User = require('../lib/models/User');
 const Membership = require('../lib/models/Membership');
 const Vote = require('../lib/models/Vote');
 const Poll = require('../lib/models/Poll');
-
+require('dotenv').config();
 
 describe('membership routes', () => {
   beforeAll(async() => {
@@ -32,16 +32,27 @@ describe('membership routes', () => {
     });
   });
 
+
   let user;
   beforeEach(async() => {
     user = await User.create({
-      name: 'hunter',
-      phone: '1234567890',
-      email: 'newfakeemail@gmail.com',
-      password: 'password123',
+      name: 'test',
+      phone: '1234567899',
+      email: 'test@gmail.com',
+      password: 'testpassword',
       communicationMedium: 'phone',
-      imageUrl: 'pic.png',
+      imageUrl: 'testpic.png'
     });
+  });
+
+  const agent = request.agent(app);
+  beforeEach(() => {
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'test@gmail.com',
+        password: 'testpassword'
+      });
   });
 
   afterAll(async() => {
@@ -50,7 +61,7 @@ describe('membership routes', () => {
   });
   
   it('creates a membership via POST', () => {
-    return request(app)
+    return agent
       .post('/api/v1/memberships')
       .send({
         organization: organization._id,
@@ -71,7 +82,7 @@ describe('membership routes', () => {
       organization: organization._id,
       user: user._id
     })
-      .then(() => request(app).get(`/api/v1/memberships?organization=${organization.id}`))
+      .then(() => agent.get(`/api/v1/memberships?organization=${organization.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -83,8 +94,8 @@ describe('membership routes', () => {
           },
           user: {
             _id: user.id,
-            name: 'hunter',
-            imageUrl: 'pic.png'
+            name: 'test',
+            imageUrl: 'testpic.png'
           }
         }]);
       });
@@ -95,7 +106,7 @@ describe('membership routes', () => {
       organization: organization._id,
       user: user._id
     })
-      .then(() => request(app).get(`/api/v1/memberships?user=${user.id}`))
+      .then(() => agent.get(`/api/v1/memberships?user=${user.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -107,8 +118,8 @@ describe('membership routes', () => {
           },
           user: {
             _id: user.id,
-            name: 'hunter',
-            imageUrl: 'pic.png'
+            name: 'test',
+            imageUrl: 'testpic.png'
           }
         }]);
       });
@@ -141,7 +152,7 @@ describe('membership routes', () => {
       user: user._id
     });
 
-    return request(app)
+    return agent
       .delete(`/api/v1/memberships/${member._id}`)
       .then(res => {
         expect(res.body).toEqual({
