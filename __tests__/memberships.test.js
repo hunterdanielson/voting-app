@@ -48,7 +48,7 @@ describe('membership routes', () => {
     return mongod.stop();
   });
   
-  it('creates a membership via POST', () => {
+  it.only('creates a membership via POST', () => {
     return request(app)
       .post('/api/v1/memberships')
       .send({

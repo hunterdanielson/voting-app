@@ -2,6 +2,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
 const connect = require('../lib/utils/connect');
+require('dotenv').config();
 
 const request = require('supertest');
 const app = require('../lib/app');
@@ -16,21 +17,34 @@ describe('user routes', () => {
   beforeEach(() => {
     return mongoose.connection.dropDatabase();
   });
+  let user;
+  beforeEach(async() => {
+    user = await User.create({
+      name: 'test',
+      phone: '1234567899',
+      email: 'test@gmail.com',
+      password: 'testpassword',
+      communicationMedium: 'phone',
+      imageUrl: 'testpic.png'
+    });
+  });
 
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
   });
 
-  it('gets specific user and all orgs they are part of by id via GET', () => {
-    return User.create({
-      name: 'hunter',
-      phone: '1234567890',
-      email: 'fakeemail@gmail.com',
-      communicationMedium: 'phone',
-      imageUrl: 'pic.png'
-    })
-      .then(user => request(app).get(`/api/v1/users/${user._id}`))
+  it('can sign up a new user via POST', () => {
+    return request(app)
+      .post('/api/v1/users/signup')
+      .send({
+        name: 'hunter',
+        phone: '1234567890',
+        email: 'fakeemail@gmail.com',
+        password: 'password',
+        communicationMedium: 'phone',
+        imageUrl: 'pic.png'
+      })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -38,58 +52,102 @@ describe('user routes', () => {
           phone: '1234567890',
           email: 'fakeemail@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png',
+          imageUrl: 'pic.png'
+        });
+      });
+  });
+
+  it('can login a user via POST', () => {
+    return request(app)
+      .post('/api/v1/users/login')
+      .send({
+        email: 'test@gmail.com',
+        password: 'testpassword'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'test',
+          phone: '1234567899',
+          email: 'test@gmail.com',
+          communicationMedium: 'phone',
+          imageUrl: 'testpic.png'
+        });
+      });
+  });
+
+  it('can verify a user via GET', () => {
+    const agent = request.agent(app);
+    
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'test@gmail.com',
+        password: 'testpassword'
+      })
+      .then(() => {
+        return agent
+          .get('/api/v1/users/verify');
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: user.id,
+          name: 'test',
+          phone: '1234567899',
+          email: 'test@gmail.com',
+          communicationMedium: 'phone',
+          imageUrl: 'testpic.png'
+        });
+      });
+  });
+
+  it('gets specific user and all orgs they are part of by id via GET', () => {
+   
+    return request(app).get(`/api/v1/users/${user._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'test',
+          phone: '1234567899',
+          email: 'test@gmail.com',
+          communicationMedium: 'phone',
+          imageUrl: 'testpic.png',
           organizations: []
         });
       });
   });
 
   it('updates a user by id via PATCH', () => {
-    return User.create({
-      name: 'hunter',
-      phone: '1234567890',
-      email: 'fakeemail@gmail.com',
-      communicationMedium: 'phone',
-      imageUrl: 'pic.png'
-    })
-      .then(user => {
-        return request(app)
-          .patch(`/api/v1/users/${user._id}`)
-          .send({ email: 'newfakeemail@gmail.com' });
-      })
+    return request(app)
+      .patch(`/api/v1/users/${user._id}`)
+      .send({ imageUrl: 'newpic.png' })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
-          name: 'hunter',
-          phone: '1234567890',
-          email: 'newfakeemail@gmail.com',
+          name: 'test',
+          phone: '1234567899',
+          email: 'test@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png'
+          imageUrl: 'newpic.png'
         });
       });
   });
 
   it('can del a org by id via DELETE', () => {
-    return User.create({
-      name: 'hunter',
-      phone: '1234567890',
-      email: 'fakeemail@gmail.com',
-      communicationMedium: 'phone',
-      imageUrl: 'pic.png'
-    })
-      .then(user => {
-        return request(app)
-          .delete(`/api/v1/users/${user._id}`)
-          .send({ imageUrl: 'otherpic.png' });
-      })
+
+     
+    return request(app)
+      .delete(`/api/v1/users/${user._id}`)
+      .send({ imageUrl: 'otherpic.png' })
+     
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
-          name: 'hunter',
-          phone: '1234567890',
-          email: 'fakeemail@gmail.com',
+          name: 'test',
+          phone: '1234567899',
+          email: 'test@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png'
+          imageUrl: 'testpic.png'
         });
       });
   });
