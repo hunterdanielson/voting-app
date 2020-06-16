@@ -8,6 +8,8 @@ const app = require('../lib/app');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
 const Membership = require('../lib/models/Membership');
+const Vote = require('../lib/models/Vote');
+const Poll = require('../lib/models/Poll');
 
 
 describe('membership routes', () => {
@@ -111,12 +113,35 @@ describe('membership routes', () => {
       });
   });
 
-  it('deletes a membership via DELETE', () => {
-    return Membership.create({
+  it('deletes a membership and all associated votes via DELETE', async() => {
+    const poll = await Poll.create({
+      organization: organization._id,
+      title: 'water poll',
+      description: 'You drink water',
+      options: ['Yes', 'No']
+    });
+    const poll2 = await Poll.create({
+      organization: organization._id,
+      title: 'food poll',
+      description: 'You eat food',
+      options: ['Yes', 'No']
+    });
+    await Vote.create([{
+      poll: poll._id,
+      user: user._id,
+      option: 'Yes'
+    }, {
+      poll: poll2._id,
+      user: user._id,
+      option: 'No'
+    }]);
+    const member = await Membership.create({
       organization: organization._id,
       user: user._id
-    })
-      .then(membership => request(app).delete(`/api/v1/memberships/${membership.id}`))
+    });
+
+    return request(app)
+      .delete(`/api/v1/memberships/${member._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -124,6 +149,10 @@ describe('membership routes', () => {
           organization: organization.id,
           user: user.id
         });
+        return Vote.find({ membership: member._id });
+      })
+      .then(vote => {
+        expect(vote).toEqual([]);
       });
   });
 });

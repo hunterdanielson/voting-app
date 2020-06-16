@@ -22,7 +22,7 @@ describe('user routes', () => {
     return mongod.stop();
   });
 
-  it('gets specific user description by id via GET', () => {
+  it('gets specific user and all orgs they are part of by id via GET', () => {
     return User.create({
       name: 'hunter',
       phone: '1234567890',
@@ -38,7 +38,8 @@ describe('user routes', () => {
           phone: '1234567890',
           email: 'fakeemail@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png'
+          imageUrl: 'pic.png',
+          organizations: []
         });
       });
   });
