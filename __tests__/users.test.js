@@ -30,6 +30,16 @@ describe('user routes', () => {
     });
   });
 
+  const agent = request.agent(app);
+  beforeEach(() => {
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'test@gmail.com',
+        password: 'testpassword'
+      });
+  });
+
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
@@ -78,18 +88,8 @@ describe('user routes', () => {
   });
 
   it('can verify a user via GET', () => {
-    const agent = request.agent(app);
-
     return agent
-      .post('/api/v1/users/login')
-      .send({
-        email: 'test@gmail.com',
-        password: 'testpassword'
-      })
-      .then(() => {
-        return agent
-          .get('/api/v1/users/verify');
-      })
+      .get('/api/v1/users/verify')
       .then(res => {
         expect(res.body).toEqual({
           _id: user.id,
@@ -103,7 +103,8 @@ describe('user routes', () => {
   });
 
   it('gets specific user and all orgs they are part of by id via GET', () => {
-    return request(app).get(`/api/v1/users/${user._id}`)
+    
+    return agent.get(`/api/v1/users/${user._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -118,7 +119,7 @@ describe('user routes', () => {
   });
 
   it('updates a user by id via PATCH', () => {
-    return request(app)
+    return agent
       .patch(`/api/v1/users/${user._id}`)
       .send({ imageUrl: 'newpic.png' })
       .then(res => {
@@ -134,7 +135,7 @@ describe('user routes', () => {
   });
 
   it('can del a org by id via DELETE', () => {
-    return request(app)
+    return agent
       .delete(`/api/v1/users/${user._id}`)
       .send({ imageUrl: 'otherpic.png' })
       .then(res => {
