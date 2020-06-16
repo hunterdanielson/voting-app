@@ -38,8 +38,7 @@ describe('user routes', () => {
           phone: '1234567890',
           email: 'fakeemail@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png',
-          __v: 0
+          imageUrl: 'pic.png'
         });
       });
   });
@@ -64,8 +63,7 @@ describe('user routes', () => {
           phone: '1234567890',
           email: 'newfakeemail@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png',
-          __v: 0
+          imageUrl: 'pic.png'
         });
       });
   });
@@ -90,8 +88,7 @@ describe('user routes', () => {
           phone: '1234567890',
           email: 'fakeemail@gmail.com',
           communicationMedium: 'phone',
-          imageUrl: 'pic.png',
-          __v: 0
+          imageUrl: 'pic.png'
         });
       });
   });
