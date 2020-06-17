@@ -9,6 +9,7 @@ const Poll = require('../lib/models/Poll');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
 const Vote = require('../lib/models/Vote');
+const Membership = require('../lib/models/Membership');
 require('dotenv').config();
 
 describe('poll routes', () => {
@@ -52,6 +53,13 @@ describe('poll routes', () => {
     });
   });
 
+  beforeEach(async() => {
+    await Membership.create({
+      user: user._id,
+      organization: organization._id
+    });
+  });
+
   const agent = request.agent(app);
   beforeEach(() => {
     return agent
@@ -67,7 +75,7 @@ describe('poll routes', () => {
     return mongod.stop();
   });
   
-  it('creates a vote via POST', () => {
+  it('creates a vote via if they are a member POST', () => {
     return agent
       .post('/api/v1/votes')
       .send({
@@ -82,6 +90,38 @@ describe('poll routes', () => {
           user: user.id,
           option: 'Yes',
           __v: 0
+        });
+      });
+  });
+
+  it('fails to create a vote if not a member via POST', async() => {
+    const nonMember = await User.create({
+      name: 'nonmember',
+      phone: '111111111',
+      password: 'pass123',
+      email: 'l@gmail.com',
+      communicationMedium: 'phone',
+      imageUrl: 'pic.png',
+    });
+    const newAgent = request.agent(app);
+    await newAgent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'l@gmail.com',
+        password: 'pass123'
+      });
+
+    return newAgent
+      .post('/api/v1/votes')
+      .send({
+        poll: poll._id,
+        user: nonMember._id,
+        option: 'Yes'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          message: 'Not a member',
+          status: 500
         });
       });
   });
