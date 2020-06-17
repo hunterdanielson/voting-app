@@ -7,7 +7,6 @@ const request = require('supertest');
 const app = require('../lib/app');
 const Poll = require('../lib/models/Poll');
 const Organization = require('../lib/models/Organization');
-const Vote = require('../lib/models/Vote');
 const User = require('../lib/models/User');
 require('dotenv').config();
 
