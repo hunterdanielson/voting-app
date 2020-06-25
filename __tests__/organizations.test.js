@@ -10,6 +10,7 @@ const Poll = require('../lib/models/Poll');
 const Vote = require('../lib/models/Vote');
 const User = require('../lib/models/User');
 const Membership = require('../lib/models/Membership');
+require('dotenv').config();
 
 describe('organization routes', () => {
   beforeAll(async() => {
@@ -21,13 +22,35 @@ describe('organization routes', () => {
     return mongoose.connection.dropDatabase();
   });
 
+  let user;
+  beforeEach(async() => {
+    user = await User.create({
+      name: 'test',
+      phone: '1234567899',
+      email: 'test@gmail.com',
+      password: 'testpassword',
+      communicationMedium: 'phone',
+      imageUrl: 'testpic.png'
+    });
+  });
+
+  const agent = request.agent(app);
+  beforeEach(() => {
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'test@gmail.com',
+        password: 'testpassword'
+      });
+  });
+
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
   });
 
   it('can create a org by POST', () => {
-    return request(app)
+    return agent
       .post('/api/v1/organizations')
       .send({
         title: 'random company',
@@ -47,8 +70,8 @@ describe('organization routes', () => {
   // this test logs the error, which is huge
   // skipping it for now lets me look at other tests easier
   // but it still works
-  it('can fails to create with bad data by POST', () => {
-    return request(app)
+  it('fails to create with bad data by POST', () => {
+    return agent
       .post('/api/v1/organizations')
       .send({
         name: 'random company',
@@ -69,7 +92,7 @@ describe('organization routes', () => {
       description: 'rand desc',
       imageUrl: 'random.png',
     })
-      .then(() => request(app).get('/api/v1/organizations'))
+      .then(() => agent.get('/api/v1/organizations'))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -85,19 +108,12 @@ describe('organization routes', () => {
       description: 'rand desc',
       imageUrl: 'random.png',
     });
-    const user = await User.create({
-      name: 'hunter',
-      phone: '1234567890',
-      email: 'fakeemail@gmail.com',
-      communicationMedium: 'phone',
-      imageUrl: 'pic.png'
-    });
     await Membership.create(
       {
         organization: org._id,
         user: user._id
       });
-    return request(app)
+    return agent
       .get(`/api/v1/organizations/${org._id}`)
       .then(res => {
         expect(res.body).toEqual({
@@ -122,7 +138,7 @@ describe('organization routes', () => {
       imageUrl: 'old.png',
     })
       .then(organization => {
-        return request(app)
+        return agent
           .patch(`/api/v1/organizations/${organization._id}`)
           .send({ imageUrl: 'otherpic.png' });
       })
@@ -156,13 +172,6 @@ describe('organization routes', () => {
         description: 'random word',
         options: ['Rand', 'Random']
       });
-    const user = await User.create({
-      name: 'hunter',
-      phone: '1234567890',
-      email: 'fakeemail@gmail.com',
-      communicationMedium: 'phone',
-      imageUrl: 'pic.png'
-    });
     await Vote.create([{
       poll: poll._id,
       user: user._id,
@@ -173,7 +182,7 @@ describe('organization routes', () => {
       option: 'Rand'
     }]);
       
-    return request(app)
+    return agent
       .delete(`/api/v1/organizations/${org._id}`)
       .then(res => {
         expect(res.body).toEqual({

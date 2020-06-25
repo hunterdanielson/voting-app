@@ -9,6 +9,8 @@ const Poll = require('../lib/models/Poll');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
 const Vote = require('../lib/models/Vote');
+const Membership = require('../lib/models/Membership');
+require('dotenv').config();
 
 describe('poll routes', () => {
   beforeAll(async() => {
@@ -44,10 +46,28 @@ describe('poll routes', () => {
     user = await User.create({
       name: 'hunter',
       phone: '1234567890',
+      password: 'password123',
       email: 'newfakeemail@gmail.com',
       communicationMedium: 'phone',
       imageUrl: 'pic.png',
     });
+  });
+
+  beforeEach(async() => {
+    await Membership.create({
+      user: user._id,
+      organization: organization._id
+    });
+  });
+
+  const agent = request.agent(app);
+  beforeEach(() => {
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'newfakeemail@gmail.com',
+        password: 'password123'
+      });
   });
 
   afterAll(async() => {
@@ -55,8 +75,8 @@ describe('poll routes', () => {
     return mongod.stop();
   });
   
-  it('creates a vote via POST', () => {
-    return request(app)
+  it('creates a vote via if they are a member POST', () => {
+    return agent
       .post('/api/v1/votes')
       .send({
         poll: poll._id,
@@ -74,6 +94,38 @@ describe('poll routes', () => {
       });
   });
 
+  it('fails to create a vote if not a member via POST', async() => {
+    const nonMember = await User.create({
+      name: 'nonmember',
+      phone: '111111111',
+      password: 'pass123',
+      email: 'l@gmail.com',
+      communicationMedium: 'phone',
+      imageUrl: 'pic.png',
+    });
+    const newAgent = request.agent(app);
+    await newAgent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'l@gmail.com',
+        password: 'pass123'
+      });
+
+    return newAgent
+      .post('/api/v1/votes')
+      .send({
+        poll: poll._id,
+        user: nonMember._id,
+        option: 'Yes'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          message: 'Not a member',
+          status: 500
+        });
+      });
+  });
+
   it('only allows a user to create one vote on a poll', async() => {
     await Vote.create({
       poll: poll._id,
@@ -81,7 +133,7 @@ describe('poll routes', () => {
       option: 'No'
     });
 
-    return request(app)
+    return agent
       .post('/api/v1/votes')
       .send({
         poll: poll._id,
@@ -105,7 +157,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(() => request(app).get(`/api/v1/votes?poll=${poll.id}`))
+      .then(() => agent.get(`/api/v1/votes?poll=${poll.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -125,7 +177,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(() => request(app).get(`/api/v1/votes?user=${user.id}`))
+      .then(() => agent.get(`/api/v1/votes?user=${user.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -145,7 +197,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(vote => request(app).get(`/api/v1/votes/${vote._id}`))
+      .then(vote => agent.get(`/api/v1/votes/${vote._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -165,7 +217,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(vote => request(app).patch(`/api/v1/votes/${vote._id}`)
+      .then(vote => agent.patch(`/api/v1/votes/${vote._id}`)
         .send({ option: 'No' }))
       .then(res => {
         expect(res.body).toEqual({
@@ -184,7 +236,7 @@ describe('poll routes', () => {
       user: user._id,
       option: 'Yes'
     })
-      .then(vote => request(app).delete(`/api/v1/votes/${vote._id}`))
+      .then(vote => agent.delete(`/api/v1/votes/${vote._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),

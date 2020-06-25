@@ -7,8 +7,8 @@ const request = require('supertest');
 const app = require('../lib/app');
 const Poll = require('../lib/models/Poll');
 const Organization = require('../lib/models/Organization');
-const Vote = require('../lib/models/Vote');
 const User = require('../lib/models/User');
+require('dotenv').config();
 
 describe('poll routes', () => {
   beforeAll(async() => {
@@ -19,6 +19,27 @@ describe('poll routes', () => {
 
   beforeEach(async() => {
     return mongoose.connection.dropDatabase();
+  });
+
+  beforeEach(async() => {
+    await User.create({
+      name: 'test',
+      phone: '1234567899',
+      email: 'test@gmail.com',
+      password: 'testpassword',
+      communicationMedium: 'phone',
+      imageUrl: 'testpic.png'
+    });
+  });
+
+  const agent = request.agent(app);
+  beforeEach(() => {
+    return agent
+      .post('/api/v1/users/login')
+      .send({
+        email: 'test@gmail.com',
+        password: 'testpassword'
+      });
   });
 
   let organization;
@@ -35,9 +56,9 @@ describe('poll routes', () => {
     return mongod.stop();
   });
   
-  it.only('creates a poll via POST', () => {
+  it('creates a poll via POST', () => {
 
-    return request(app)
+    return agent
       .post('/api/v1/polls')
       .send({
         organization: organization._id,
@@ -64,7 +85,7 @@ describe('poll routes', () => {
       description: 'You drink water',
       options: ['Yes', 'No']
     })
-      .then(() => request(app).get(`/api/v1/polls?organization=${organization.id}`))
+      .then(() => agent.get(`/api/v1/polls?organization=${organization.id}`))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -84,7 +105,7 @@ describe('poll routes', () => {
       description: 'You drink water',
       options: ['Yes', 'No']
     })
-      .then(poll => request(app).get(`/api/v1/polls/${poll._id}`))
+      .then(poll => agent.get(`/api/v1/polls/${poll._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -107,7 +128,7 @@ describe('poll routes', () => {
       description: 'You drink water',
       options: ['Yes', 'No']
     })
-      .then(poll => request(app).patch(`/api/v1/polls/${poll._id}`)
+      .then(poll => agent.patch(`/api/v1/polls/${poll._id}`)
         .send({ title: 'drink water poll' }))
       .then(res => {
         expect(res.body).toEqual({
@@ -129,7 +150,7 @@ describe('poll routes', () => {
       options: ['Yes', 'No']
     });
 
-    return request(app)
+    return agent
       .delete(`/api/v1/polls/${poll._id}`)
       .then(res => {
         expect(res.body).toEqual({
